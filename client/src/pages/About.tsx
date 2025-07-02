@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function About() {
     return (
       <div className="flex flex-col items-center justify-center px-4 py-8 text-white border-4 border-yellow-600">

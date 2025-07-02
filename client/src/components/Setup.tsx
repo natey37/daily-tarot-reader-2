@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 // import { useSetupState } from "../hooks/tarotState";
 
 type SetupProps = {

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { TAROT_CARD_MEANINGS, NEW_TAROT_CARD_MEANINGS_STANDARD } from "../../constants";
+import { useState, useEffect, useRef } from "react";
+import { NEW_TAROT_CARD_MEANINGS_STANDARD } from "../../constants";
 
 type Card = {
   name: string;
