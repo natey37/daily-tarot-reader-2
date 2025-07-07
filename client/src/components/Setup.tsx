@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { preloadImages } from "../utils/images";
 // import { useSetupState } from "../hooks/tarotState";
 
 type SetupProps = {
@@ -20,7 +21,6 @@ export default function Setup({
     goToCardByName,
     generateReading,
   }: SetupProps) {
-//   const { state, nextCard, prevCard, goToCardByName, generateReading } = useSetupState();
   const card = state.currentDeck[state.viewedIndex];
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,6 +30,11 @@ export default function Setup({
     card.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  useEffect(() => {
+    const imageUrls = state.currentDeck.map(card => card.image);
+    preloadImages(imageUrls);
+  }, []);
+  
   return (
     <div className="flex flex-col items-center text-white p-4">
       <h1 className="text-4xl font-bold text-center text-yellow-400 mb-2">
