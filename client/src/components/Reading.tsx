@@ -43,21 +43,13 @@ export default function Reading({ state }: ReadingProps) {
     const fetchInterpretation = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:4000/api/interpret", {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/interpret`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ cards: state.selectedCards }),
         });
-
-        // const response = await fetch("https://daily-tarot-reader-server.onrender.com/api/interpret", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({ cards: state.selectedCards }),
-        // });
 
         const data = await response.json();
         setInterpretation(data.reading);
