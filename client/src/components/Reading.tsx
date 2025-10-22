@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { NEW_TAROT_CARD_MEANINGS_STANDARD } from "../../constants";
+import domtoimage from "dom-to-image-more";
 
 type Card = {
   name: string;
@@ -18,6 +19,22 @@ export default function Reading({ state }: ReadingProps) {
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const hasFetched = useRef(false);
+  const hiddenReadingRef = useRef<HTMLDivElement>(null);
+
+  const handleDownload = async () => {
+    if (!hiddenReadingRef.current) return;
+
+    try {
+      const dataUrl = await domtoimage.toPng(hiddenReadingRef.current);
+      const link = document.createElement("a");
+      let name = state.selectedCards.map(obj => obj.name).join(" ");
+      link.download = name;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+    }
+  };
 
   const handleFlip = (index: number) => {
     setFlipped((prev) => {
@@ -43,13 +60,16 @@ export default function Reading({ state }: ReadingProps) {
     const fetchInterpretation = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/interpret`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ cards: state.selectedCards }),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/interpret`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ cards: state.selectedCards }),
+          }
+        );
 
         const data = await response.json();
         setInterpretation(data.reading);
@@ -96,6 +116,7 @@ export default function Reading({ state }: ReadingProps) {
                   alt="Tarot card"
                   className="absolute w-full h-full backface-hidden rounded-xl 
                   drop-shadow-[0_0_20px_rgba(250,204,21,0.7)]"
+                  crossOrigin="anonymous"
                 />
                 <div
                   className="absolute w-full h-full backface-hidden rotate-y-180 
@@ -174,6 +195,41 @@ export default function Reading({ state }: ReadingProps) {
             </p>
           </div>
         ) : null}
+      </div>
+
+      <div className="flex gap-4 mt-6">
+        <button
+          onClick={handleDownload}
+          className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded"
+        >
+          Save Reading
+        </button>
+      </div>
+
+      <div
+        ref={hiddenReadingRef}
+        className="absolute -top-[9999px] left-0 w-[1200px] bg-[#1a1a1a] text-white border-5 border-yellow-400 p-8"
+        aria-hidden="true"
+      >
+        <h1 className="text-center text-4xl font-bold text-[#9C8FFF] mb-8 font-serif tracking-wide">
+          Daily Tarot Reader - {new Date().toLocaleDateString("en-us")}
+        </h1>
+
+        <div className="flex justify-center gap-6 mb-10">
+          {state.selectedCards.map((card) => (
+            <img
+              key={card.name}
+              src={card.image}
+              alt={card.name}
+              className="w-[360px] h-auto"
+              draggable={false}
+            />
+          ))}
+        </div>
+
+        <div className="text-lg leading-relaxed text-gray-100">
+          <p className="whitespace-pre-line border-none">{interpretation}</p>
+        </div>
       </div>
     </div>
   );

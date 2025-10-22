@@ -90,7 +90,7 @@ export const ORIGINAL_DECK = [
   name,
   image: `https://pub-13123c72007343e4a351ce49934d28f3.r2.dev/${encodeURIComponent(
     `Standard - ${name}.png`
-  )}`,
+  )}`, 
 }));
 
 export const NEW_TAROT_CARD_MEANINGS_STANDARD: Record<string, string> = {
