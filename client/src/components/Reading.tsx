@@ -27,7 +27,7 @@ export default function Reading({ state }: ReadingProps) {
     try {
       const dataUrl = await domtoimage.toPng(hiddenReadingRef.current);
       const link = document.createElement("a");
-      let name = state.selectedCards.map(obj => obj.name).join(" ");
+      const name = state.selectedCards.map(obj => obj.name).join(" ");
       link.download = name;
       link.href = dataUrl;
       link.click();
