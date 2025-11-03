@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { NEW_TAROT_CARD_MEANINGS_STANDARD } from "../../constants";
 import domtoimage from "dom-to-image-more";
+import { format } from "date-fns";
 
 type Card = {
   name: string;
@@ -27,7 +28,7 @@ export default function Reading({ state }: ReadingProps) {
     try {
       const dataUrl = await domtoimage.toPng(hiddenReadingRef.current);
       const link = document.createElement("a");
-      const name = state.selectedCards.map(obj => obj.name).join(" ");
+      const name = state.selectedCards.map((obj) => obj.name).join(" ");
       link.download = name;
       link.href = dataUrl;
       link.click();
@@ -44,12 +45,34 @@ export default function Reading({ state }: ReadingProps) {
     });
   };
 
+  const saveReading = (reading: {
+    date: string;
+    cards: Card[];
+    reading: string;
+  }) => {
+    try {
+      const readings = localStorage.getItem("readings");
+      const parsedReadings = readings ? JSON.parse(readings) : [];
+
+      parsedReadings.push({
+        id: Date.now(),
+        date: reading.date,
+        cards: reading.cards,
+        reading: reading.reading,
+      });
+
+      localStorage.setItem("readings", JSON.stringify(parsedReadings));
+    } catch (error) {
+      console.error("Failed to save reading:", error);
+    }
+  };
+
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
     const savedDate = localStorage.getItem("lastReadingDate");
     const savedInterpretation = localStorage.getItem("lastReadingText");
+    const dateString = format(new Date(), "yyyy-MM-dd");
 
-    if (savedDate === today && savedInterpretation) {
+    if (savedDate === dateString && savedInterpretation) {
       setInterpretation(savedInterpretation);
       return;
     }
@@ -72,8 +95,15 @@ export default function Reading({ state }: ReadingProps) {
         );
 
         const data = await response.json();
+
+        saveReading({
+          date: dateString,
+          cards: state.selectedCards,
+          reading: data.reading,
+        });
+
         setInterpretation(data.reading);
-        localStorage.setItem("lastReadingDate", today);
+        localStorage.setItem("lastReadingDate", dateString);
         localStorage.setItem("lastReadingText", data.reading);
       } catch (error) {
         console.error("Failed to fetch interpretation:", error);
@@ -87,6 +117,7 @@ export default function Reading({ state }: ReadingProps) {
 
     fetchInterpretation();
   }, [state.selectedCards]);
+
   return (
     <div className="flex flex-col items-center justify-center px-4 py-10 bg-black text-white rounded-xl w-full max-w-6xl mx-auto shadow-[0_4px_20px_rgba(126,34,206,1)]">
       <div className="flex flex-col sm:flex-row justify-center items-center gap-8">
