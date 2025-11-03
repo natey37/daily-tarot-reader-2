@@ -71,7 +71,8 @@ export function useSetupState() {
       selectedCards: [],
       hasStartedReading: false,
     }));
-    localStorage.clear()
+    localStorage.removeItem("lastReadingDate")
+    localStorage.removeItem("lastReadingText")
   };
   console.log("STATE", state)
   return {

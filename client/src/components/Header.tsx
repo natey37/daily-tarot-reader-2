@@ -10,6 +10,12 @@ function Header() {
         </a>
         <nav className="flex space-x-6">
           <a
+            href="/calendar"
+            className="text-white font-semibold hover:text-[rgb(214,158,3)] hover:underline transition duration-200"
+          >
+            Calendar
+          </a>
+          <a
             href="/about"
             className="text-white font-semibold hover:text-[rgb(214,158,3)] hover:underline transition duration-200"
           >

@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Support from "./pages/Support";
 import "./App.css";
+import Calendar from "./pages/Calendar";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/calendar" element={<Calendar />} />
       </Route>
     </Routes>
   );
