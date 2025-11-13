@@ -19,7 +19,6 @@ export default function Reading({ state }: ReadingProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const hasFetched = useRef(false);
   const hiddenReadingRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
@@ -76,9 +75,6 @@ export default function Reading({ state }: ReadingProps) {
       setInterpretation(savedInterpretation);
       return;
     }
-
-    if (hasFetched.current) return;
-    hasFetched.current = true;
 
     const fetchInterpretation = async () => {
       setLoading(true);
@@ -147,7 +143,6 @@ export default function Reading({ state }: ReadingProps) {
                   alt="Tarot card"
                   className="absolute w-full h-full backface-hidden rounded-xl 
                   drop-shadow-[0_0_20px_rgba(250,204,21,0.7)]"
-                  crossOrigin="anonymous"
                 />
                 <div
                   className="absolute w-full h-full backface-hidden rotate-y-180 
