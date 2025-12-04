@@ -3,6 +3,7 @@ import "./loadEnv.js";
 import express from "express";
 import cors from "cors";
 import interpretRouter from "./routes/interpret.js";
+import imageDownloadRouter from "./routes/reading-download.js"
 import rateLimit from "express-rate-limit";
 
 const app = express();
@@ -37,6 +38,10 @@ const ipLimiter = rateLimit({
 });
 
 app.use("/api/interpret", ipLimiter, interpretRouter);
+app.use("/api/generate-reading-image", imageDownloadRouter)
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// const PORT = process.env.PORT || 4000;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(4000, '0.0.0.0', () => {
+  console.log('Server running on port 4000');
+});

@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { NEW_TAROT_CARD_MEANINGS_STANDARD } from "../../constants";
-import domtoimage from "dom-to-image-more";
 import { format } from "date-fns";
 
 type Card = {
@@ -19,20 +18,211 @@ export default function Reading({ state }: ReadingProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const hiddenReadingRef = useRef<HTMLDivElement>(null);
+  //   if (!hiddenReadingRef.current) return;
+
+  //   try {
+  //     const dataUrl = await domtoimage.toPng(hiddenReadingRef.current);
+  //     const link = document.createElement("a");
+  //     const name = state.selectedCards.map((obj) => obj.name).join(" ");
+  //     link.download = name;
+  //     link.href = dataUrl;
+  //     link.click();
+  //   } catch (error) {
+  //     console.error("Failed to generate image:", error);
+  //   }
+  // };
+
+  // const handleDownload = async () => {
+  //   if (!hiddenReadingRef.current) return;
+
+  //   try {
+  //     const element = hiddenReadingRef.current;
+
+  //     console.log("=== Starting image capture ===");
+  //     console.log("Element:", element);
+  //     console.log(
+  //       "Card images:",
+  //       state.selectedCards.map((c) => c.image)
+  //     );
+
+  //     // Check if images exist and are loaded
+  //     const images = element.querySelectorAll("img");
+  //     console.log("Found images:", images.length);
+
+  //     images.forEach((img, i) => {
+  //       console.log(`Image ${i}:`, {
+  //         src: img.src,
+  //         complete: img.complete,
+  //         naturalWidth: img.naturalWidth,
+  //         naturalHeight: img.naturalHeight,
+  //       });
+  //     });
+
+  //     // Wait for images
+  //     await Promise.all(
+  //       Array.from(images).map((img, i) => {
+  //         if (img.complete && img.naturalWidth > 0) {
+  //           console.log(`Image ${i} already loaded`);
+  //           return Promise.resolve();
+  //         }
+  //         console.log(`Waiting for image ${i} to load...`);
+  //         return new Promise((resolve, reject) => {
+  //           img.onload = () => {
+  //             console.log(`Image ${i} loaded successfully`);
+  //             resolve();
+  //           };
+  //           img.onerror = (e) => {
+  //             console.error(`Image ${i} failed to load:`, e);
+  //             reject(e);
+  //           };
+  //           // Trigger reload if needed
+  //           if (!img.complete) {
+  //             const src = img.src;
+  //             img.src = "";
+  //             img.src = src;
+  //           }
+  //         });
+  //       })
+  //     );
+
+  //     console.log("All images loaded, positioning element...");
+
+  //     // Position element
+  //     element.style.position = "fixed";
+  //     element.style.top = "0";
+  //     element.style.left = "100vw";
+  //     element.style.transform = "none";
+  //     element.style.opacity = "1";
+  //     element.style.zIndex = "9999";
+
+  //     await new Promise((resolve) => setTimeout(resolve, 300));
+
+  //     console.log("Calling html2canvas...");
+
+  //     const canvas = await html2canvas(element, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       backgroundColor: "#1a1a1a",
+  //       logging: true,
+  //       onclone: (clonedDoc) => {
+  //         console.log("Canvas cloned document");
+  //       },
+  //     });
+
+  //     console.log("Canvas created:", canvas.width, "x", canvas.height);
+
+  //     // Hide again
+  //     element.style.transform = "translateX(-9999px)";
+  //     element.style.opacity = "0";
+  //     element.style.zIndex = "-1";
+  //     element.style.left = "0";
+
+  //     canvas.toBlob(async (blob) => {
+  //       console.log("Blob created:", blob ? blob.size : "null");
+
+  //       if (!blob) {
+  //         console.error("No blob created!");
+  //         return;
+  //       }
+
+  //       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  //       console.log("Is mobile:", isMobile);
+  //       console.log("Has share API:", !!navigator.share);
+  //       console.log("Has canShare:", !!navigator.canShare);
+
+  //       if (isMobile && navigator.share) {
+  //         const file = new File([blob], "tarot-reading.png", {
+  //           type: "image/png",
+  //         });
+
+  //         // Check if we can share files
+  //         const canShareFiles =
+  //           navigator.canShare && navigator.canShare({ files: [file] });
+  //         console.log("Can share files:", canShareFiles);
+
+  //         if (canShareFiles) {
+  //           try {
+  //             await navigator.share({
+  //               files: [file],
+  //               title: "My Tarot Reading",
+  //             });
+  //             console.log("Share successful");
+  //             return;
+  //           } catch (error) {
+  //             console.error("Share failed:", error);
+  //             // Fall through to download
+  //           }
+  //         }
+  //       }
+
+  //       // Fallback download
+  //       console.log("Using download fallback");
+  //       const url = URL.createObjectURL(blob);
+  //       const link = document.createElement("a");
+  //       const name = state.selectedCards.map((obj) => obj.name).join(" ");
+  //       link.download = name;
+  //       link.href = url;
+  //       link.click();
+  //       URL.revokeObjectURL(url);
+  //     }, "image/png");
+  //   } catch (error) {
+  //     console.error("Failed to save reading:", error);
+  //   }
+  // };
 
   const handleDownload = async () => {
-    if (!hiddenReadingRef.current) return;
-
     try {
-      const dataUrl = await domtoimage.toPng(hiddenReadingRef.current);
-      const link = document.createElement("a");
-      const name = state.selectedCards.map((obj) => obj.name).join(" ");
-      link.download = name;
-      link.href = dataUrl;
-      link.click();
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      const fullUrl = `${apiUrl}/api/generate-reading-image`;
+
+      console.log("Starting fetch...");
+
+      const response = await fetch(fullUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cards: state.selectedCards,
+          reading: interpretation,
+          date: new Date().toLocaleDateString(),
+        }),
+      });
+
+      console.log("Fetch completed, status:", response.status);
+      console.log("Response OK:", response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      console.log("Got blob:", blob.size, blob.type);
+
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      const url = URL.createObjectURL(blob);
+
+      if (isMobile) {
+        // Open in new window - user can long-press to save
+        const newWindow = window.open(url, "_blank");
+        if (!newWindow) {
+          // If popup blocked, try direct navigation
+          window.location.href = url;
+        }
+      } else {
+        // Desktop download
+        const link = document.createElement("a");
+        link.download = "tarot-reading.png";
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
     } catch (error) {
-      console.error("Failed to generate image:", error);
+      console.error("Failed to save reading:", error);
+      alert("Failed to save reading. Please try again.");
     }
   };
 
@@ -142,7 +332,7 @@ export default function Reading({ state }: ReadingProps) {
                   src={card.image}
                   alt="Tarot card"
                   className="absolute w-full h-full backface-hidden rounded-xl 
-                  drop-shadow-[0_0_20px_rgba(250,204,21,0.7)]"
+                  drop-shadow-[0_0_20px_rgba(250,204,21,0.7)] reading-card-image"
                 />
                 <div
                   className="absolute w-full h-full backface-hidden rotate-y-180 
@@ -230,32 +420,6 @@ export default function Reading({ state }: ReadingProps) {
         >
           Save Reading
         </button>
-      </div>
-
-      <div
-        ref={hiddenReadingRef}
-        className="absolute -top-[9999px] left-0 w-[1200px] bg-[#1a1a1a] text-white border-5 border-yellow-400 p-8"
-        aria-hidden="true"
-      >
-        <h1 className="text-center text-4xl font-bold text-[#9C8FFF] mb-8 font-serif tracking-wide">
-          Daily Tarot Reader - {new Date().toLocaleDateString("en-us")}
-        </h1>
-
-        <div className="flex justify-center gap-6 mb-10">
-          {state.selectedCards.map((card) => (
-            <img
-              key={card.name}
-              src={card.image}
-              alt={card.name}
-              className="w-[360px] h-auto"
-              draggable={false}
-            />
-          ))}
-        </div>
-
-        <div className="text-lg leading-relaxed text-gray-100">
-          <p className="whitespace-pre-line border-none">{interpretation}</p>
-        </div>
       </div>
     </div>
   );
