@@ -169,63 +169,79 @@ export default function Reading({ state }: ReadingProps) {
   //     console.error("Failed to save reading:", error);
   //   }
   // };
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   const handleDownload = async () => {
+    setIsGeneratingImage(true);
+
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
-      const fullUrl = `${apiUrl}/api/generate-reading-image`;
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/generate-reading-image`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cards: state.selectedCards,
+            reading: interpretation,
+            date: new Date().toLocaleDateString(),
+          }),
+        }
+      );
 
-      console.log("Starting fetch...");
-
-      const response = await fetch(fullUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cards: state.selectedCards,
-          reading: interpretation,
-          date: new Date().toLocaleDateString(),
-        }),
-      });
-
-      console.log("Fetch completed, status:", response.status);
-      console.log("Response OK:", response.ok);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
-        throw new Error(`Server returned ${response.status}`);
-      }
+      if (!response.ok) throw new Error("Failed to generate image");
 
       const blob = await response.blob();
-      console.log("Got blob:", blob.size, blob.type);
-
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
       const url = URL.createObjectURL(blob);
+      const cardNames = state.selectedCards.map((obj) => obj.name).join(" ");
 
+      // Mobile: Try Share API first, fallback to navigation
       if (isMobile) {
-        // Open in new window - user can long-press to save
-        const newWindow = window.open(url, "_blank");
-        if (!newWindow) {
-          // If popup blocked, try direct navigation
-          window.location.href = url;
+        // Try Share API if available
+        if (navigator.share && navigator.canShare) {
+          const file = new File([blob], "tarot-reading.png", {
+            type: "image/png",
+          });
+
+          if (navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: cardNames,
+              });
+              // Success! Don't continue to fallback
+              URL.revokeObjectURL(url);
+              return;
+            } catch (error) {
+              // User cancelled or share failed
+              if (error instanceof Error && error.name === "AbortError") {
+                URL.revokeObjectURL(url);
+                return;
+              }
+              // Other error - continue to fallback
+              console.log("Share failed, using fallback:", error);
+            }
+          }
         }
-      } else {
-        // Desktop download
-        const link = document.createElement("a");
-        link.download = "tarot-reading.png";
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
+
+        // Fallback: Navigate to image
+        window.location.href = url;
+        return; // Stop here
       }
+
+      // Desktop: Download
+      const link = document.createElement("a");
+      link.download = cardNames
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to save reading:", error);
       alert("Failed to save reading. Please try again.");
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
-
   const handleFlip = (index: number) => {
     setFlipped((prev) => {
       const newFlipped = [...prev];
@@ -416,9 +432,17 @@ export default function Reading({ state }: ReadingProps) {
       <div className="flex gap-4 mt-6">
         <button
           onClick={handleDownload}
-          className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded"
+          disabled={!interpretation || isGeneratingImage}
+          className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          Save Reading
+          {isGeneratingImage ? (
+            <>
+              <span className="animate-spin">⏳</span>
+              Generating...
+            </>
+          ) : (
+            "Save Reading"
+          )}
         </button>
       </div>
     </div>
